@@ -1,8 +1,9 @@
 services:
-  # Backend API (Flask + Gunicorn)
+  # Backend API (Flask + Gunicorn) - 100% FREE TIER
   - type: web
-    name: energy-scada-backend
+    name: voltIQ-backend
     env: python
+    plan: free
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
@@ -14,10 +15,11 @@ services:
       - key: FLASK_DEBUG
         value: "false"
 
-  # Frontend Web UI (React + Vite)
+  # Frontend Web UI (React + Vite) - 100% FREE STATIC SITE
   - type: web
-    name: energy-scada-frontend
+    name: voltIQ-frontend
     env: static
+    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
@@ -29,5 +31,5 @@ services:
       - key: VITE_API_URL
         fromService:
           type: web
-          name: energy-scada-backend
+          name: voltIQ-backend
           property: host
