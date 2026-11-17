@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Zap } from 'lucide-react'
+import { Eye, EyeOff, Zap, Server, Settings, Check } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import AlertBanner from '../../components/common/AlertBanner'
+import { getBaseURL } from '../../api/axios'
 
 const DEMO_CREDENTIALS = [
   { role: 'Admin', username: 'admin', password: 'Admin@123' },
@@ -17,6 +18,9 @@ const Login = () => {
   const [form, setForm] = useState({ username: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [apiUrl, setApiUrl] = useState(getBaseURL() || '')
+  const [showApiConfig, setShowApiConfig] = useState(false)
+  const [savedUrl, setSavedUrl] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -38,6 +42,21 @@ const Login = () => {
     setError('')
   }
 
+  const handleSaveApiUrl = (e) => {
+    e.preventDefault()
+    let clean = apiUrl.trim().replace(/\/+$/, '')
+    if (clean && !clean.startsWith('http://') && !clean.startsWith('https://')) {
+      clean = `https://${clean}`
+    }
+    localStorage.setItem('api_url', clean)
+    setApiUrl(clean)
+    setSavedUrl(true)
+    setTimeout(() => {
+      setSavedUrl(false)
+      setShowApiConfig(false)
+    }, 1200)
+  }
+
   return (
     <div className="min-h-screen bg-[#0A0E17] flex items-center justify-center p-4">
       <div className="relative w-full max-w-sm">
@@ -55,8 +74,10 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs font-mono">
             <div>
-              <label className="block font-semibold text-slate-300 uppercase tracking-wider mb-1">Username</label>
+              <label htmlFor="login-username" className="block font-semibold text-slate-300 uppercase tracking-wider mb-1">Username</label>
               <input
+                id="login-username"
+                name="username"
                 type="text"
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
@@ -66,9 +87,11 @@ const Login = () => {
               />
             </div>
             <div>
-              <label className="block font-semibold text-slate-300 uppercase tracking-wider mb-1">Password</label>
+              <label htmlFor="login-password" className="block font-semibold text-slate-300 uppercase tracking-wider mb-1">Password</label>
               <div className="relative">
                 <input
+                  id="login-password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -111,6 +134,42 @@ const Login = () => {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Backend Connection Config */}
+          <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-col gap-2 font-mono text-[11px]">
+            <button
+              type="button"
+              onClick={() => setShowApiConfig(!showApiConfig)}
+              className="flex items-center justify-between text-slate-500 hover:text-slate-300 transition-colors w-full"
+            >
+              <span className="flex items-center gap-1.5 truncate">
+                <Server className="w-3 h-3 text-amber-400/80" />
+                <span className="truncate max-w-[200px]">Backend: {apiUrl || 'Auto'}</span>
+              </span>
+              <Settings className="w-3 h-3 text-slate-500" />
+            </button>
+
+            {showApiConfig && (
+              <form onSubmit={handleSaveApiUrl} className="mt-1 space-y-2 bg-[#0B101D] p-2.5 rounded-xl border border-slate-800">
+                <label htmlFor="backend-url" className="text-[10px] text-slate-400 block font-semibold">Backend Service URL</label>
+                <input
+                  id="backend-url"
+                  name="backend_url"
+                  type="text"
+                  value={apiUrl}
+                  onChange={(e) => setApiUrl(e.target.value)}
+                  placeholder="https://voltiq-backend.onrender.com"
+                  className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-[11px] placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+                <button
+                  type="submit"
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 rounded-lg text-[10px] flex items-center justify-center gap-1"
+                >
+                  {savedUrl ? <Check className="w-3 h-3" /> : 'Save Backend URL'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

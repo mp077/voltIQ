@@ -27,8 +27,15 @@ def create_app():
     app.config['JWT_SECRET_KEY'] = config.JWT_SECRET_KEY
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.JWT_ACCESS_TOKEN_EXPIRES
 
-    # Setup CORS
-    CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+    # Setup CORS - allow all origins without credentials conflict
+    CORS(app, resources={r"/*": {"origins": "*"}})
+
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
+        return response
 
     # Setup JWT
     jwt = JWTManager(app)

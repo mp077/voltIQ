@@ -46,6 +46,12 @@ export const AuthProvider = ({ children }) => {
     setLoading(true)
     try {
       const res = await loginApi(credentials)
+      if (!res.data || typeof res.data !== 'object' || !res.data.token) {
+        return {
+          success: false,
+          message: 'Unable to connect to backend service. Please check your backend URL.'
+        }
+      }
       const { token: newToken, user: newUser } = res.data
       localStorage.setItem('token', newToken)
       localStorage.setItem('user', JSON.stringify(newUser))
@@ -53,7 +59,11 @@ export const AuthProvider = ({ children }) => {
       setUser(newUser)
       return { success: true }
     } catch (err) {
-      const message = err.response?.data?.message || err.response?.data?.error || 'Login failed'
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Login failed. Please check backend connection.'
       return { success: false, message }
     } finally {
       setLoading(false)

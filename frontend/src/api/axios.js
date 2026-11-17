@@ -1,15 +1,29 @@
 import axios from 'axios'
 
+export const getBaseURL = () => {
+  let url = (localStorage.getItem('api_url') || import.meta.env.VITE_API_URL || '').trim()
+  if (url) {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`
+    }
+    return url.replace(/\/+$/, '')
+  }
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:5000'
+  }
+  return ''
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Request interceptor: attach JWT token
+// Request interceptor: set dynamic baseURL and attach JWT
 api.interceptors.request.use(
   (config) => {
+    config.baseURL = getBaseURL()
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
@@ -26,7 +40,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      window.location.href = '/login'
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }
