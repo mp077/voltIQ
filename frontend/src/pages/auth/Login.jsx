@@ -48,6 +48,12 @@ const Login = () => {
     if (clean && !clean.startsWith('http://') && !clean.startsWith('https://')) {
       clean = `https://${clean}`
     }
+    try {
+      const parsed = new URL(clean)
+      if (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost') {
+        clean = `https://${parsed.hostname}.onrender.com`
+      }
+    } catch (e) {}
     localStorage.setItem('api_url', clean)
     setApiUrl(clean)
     setSavedUrl(true)

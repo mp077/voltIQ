@@ -2,14 +2,32 @@ import axios from 'axios'
 
 export const getBaseURL = () => {
   let url = (localStorage.getItem('api_url') || import.meta.env.VITE_API_URL || '').trim()
+  
   if (url) {
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = `https://${url}`
     }
+    
+    // Render's internal 'property: host' returns service name without domain (e.g. 'voltiq-backend-beje')
+    // Browser needs public internet domain: 'voltiq-backend-beje.onrender.com'
+    try {
+      const parsed = new URL(url)
+      if (!parsed.hostname.includes('.') && parsed.hostname !== 'localhost') {
+        url = `https://${parsed.hostname}.onrender.com`
+      }
+    } catch (e) {
+      if (!url.includes('.') && !url.includes('localhost')) {
+        url = `${url}.onrender.com`
+      }
+    }
     return url.replace(/\/+$/, '')
   }
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-    return 'http://localhost:5000'
+
+  // Localhost fallback
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return 'http://localhost:5000'
+    }
   }
   return ''
 }
