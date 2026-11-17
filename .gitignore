@@ -1,0 +1,31 @@
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# Python / Backend
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+backend/venv/
+
+# Database (optional - keep or seed on start, backend seeds automatically if energy.db is missing)
+# But having a clean seed script is best practice. Let's include or ignore energy.db
+# If energy.db is small (~3MB), it can be pushed, or let backend auto-seed.
+# Let's keep energy.db unignored or let seed run. Let's check size first.
+
+# Environment variables
+.env
+*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log
